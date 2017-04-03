@@ -1,6 +1,7 @@
 sessionname eemisdada2
 setenv ROOT $PWD
 # __INSERTPOINT__ This line allows a script to insert new configuration lines here.
+screen -t rstudio
 chdir src/R
 screen -t R
 chdir $ROOT

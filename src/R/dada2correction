@@ -1,0 +1,104 @@
+#!/usr/bin/env Rscript
+
+# dada2cleaning
+#
+# Runs the DADA2 sequence cleaning algorithm on all fastq.gz files in a
+# specified directory using error models read from specified rds files. The
+# files are presumed to be filtered and cut using the dada2filter program.
+#
+# Author: daniel.lundin@lnu.se
+
+suppressPackageStartupMessages(library(optparse))
+suppressPackageStartupMessages(library(dada2))
+suppressPackageStartupMessages(library(dplyr))
+suppressPackageStartupMessages(library(readr))
+suppressPackageStartupMessages(library(ShortRead))
+suppressPackageStartupMessages(library(tidyr))
+
+# Get arguments
+option_list = list(
+  make_option(
+    c('--filterdir'), type='character', default='filtered',
+    help='Directory for quality truncated reads, default "filtered". Will be created if it does not exist.'
+  ),
+  make_option(
+    c('--fwderrmodel'), type='character', 
+    help='R RDS file with error model for forward reads, as output by the dada2errmodels script (NNN.fwd.errorates.rds), no default.'
+  ),
+  make_option(
+    c('--fwdmark'), type='character', default='.r1',
+    help='Name pattern to identify forward reads in file names, default ".r1".'
+  ),
+  make_option(
+    c('--reverrmodel'), type='character', 
+    help='R RDS file with error model for reverse reads, as output by the dada2errmodels script (NNN.rev.errorates.rds), no default.'
+  ),
+  make_option(
+    c('--revmark'), type='character', default='.r2',
+    help='Name pattern to identify reverse reads in file names, default ".r2".'
+  ),
+  make_option(
+    c("-v", "--verbose"), action="store_true", default=FALSE, 
+    help="Print progress messages"
+  )
+)
+opt = parse_args(OptionParser(option_list=option_list))
+
+logmsg = function(msg, llevel='INFO') {
+  if ( opt$verbose ) {
+    write(
+      sprintf("%s: %s: %s", llevel, format(Sys.time(), "%Y-%m-%d %H:%M:%S"), msg),
+      stderr()
+    )
+  }
+}
+
+filtered = Sys.glob(sprintf("%s/*.fastq.gz", opt$filterdir))
+
+fwdfiltered = filtered[grep(opt$fwdmark, filtered, fixed=T)]
+revfiltered = filtered[grep(opt$revmark, filtered, fixed=T)]
+
+samples = sub(sprintf("%s.*", opt$fwdmark), "", basename(fwdfiltered))
+
+names(fwdfiltered) = samples
+names(revfiltered) = samples
+
+logmsg(sprintf("Reading error models from %s (forward) and %s (reverse).", opt$fwderrmodel, opt$reverrmodel))
+fwderr = readRDS(opt$fwderrmodel)
+reverr = readRDS(opt$reverrmodel)
+
+logmsg("Applying the error models")
+mergers = vector('list', length(samples))
+names(mergers) = samples
+for ( s in samples ) {
+  logmsg(sprintf("--> Cleaning %s <--", s))
+  logmsg("	forward")
+  fwdderep = derepFastq(fwdfiltered[[s]])
+  fwddada2 = dada(fwdderep, err=fwderr, multithread=T)
+  logmsg("	reverse")
+  revderep = derepFastq(revfiltered[[s]])
+  revdada2 = dada(revderep, err=reverr, multithread=T)
+  logmsg("	merging")
+  merge = mergePairs(fwddada2, fwdderep, revdada2, revderep)
+  mergers[[s]] = merge
+}
+saveRDS(fwddada2, 'fwddada2.rds')
+saveRDS(revdada2, 'revdada2.rds')
+saveRDS(mergers, 'mergers.rds')
+rm(fwdderep); rm(fwddada2)
+rm(revderep); rm(revdada2)
+
+mergers = readRDS('mergers.rds')
+
+logmsg("Constructing sequence table and removing chimeras")
+seqtab = makeSequenceTable(mergers)
+saveRDS(seqtab, 'seqtab0.rds')
+seqtab = removeBimeraDenovo(seqtab, multithread=TRUE)
+saveRDS(seqtab, 'seqtab1.rds')
+
+# Turn into a standard, long, data frame
+st0 = data.frame(t(seqtab)) %>% tibble::rownames_to_column('seq')
+st1 = st0 %>% gather(sample,count,2:length(colnames(st0))) %>% filter(count > 0)
+write_tsv(st1, 'dada2.seqtab.tsv')
+
+logmsg("Done")
