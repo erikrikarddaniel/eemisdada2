@@ -2,6 +2,9 @@
 
 # dada2filter
 #
+# This is the first script in a series of three that implements a DADA2-based
+# pipeline for correction of amplicon reads.
+#
 # Filters sequences using the fastqPairedFilter function in the dada2 package.
 #
 # Author: daniel.lundin@lnu.se
@@ -9,6 +12,8 @@
 suppressPackageStartupMessages(library(optparse))
 suppressPackageStartupMessages(library(dada2))
 suppressPackageStartupMessages(library(ShortRead))
+
+VERSION = sprintf("dada2filter version 0.1, DADA2 version: %s", packageDescription('dada2')$Version)
 
 # Get arguments
 option_list = list(
@@ -50,10 +55,19 @@ option_list = list(
   ),
   make_option(
     c("-v", "--verbose"), action="store_true", default=FALSE, 
-    help="Print progress messages"
+    help="Print progress messages."
+  ),
+  make_option(
+    c("--version"), action="store_true", default=FALSE, 
+    help="Show script version plus installed DADA2 version."
   )
 )
 opt = parse_args(OptionParser(option_list=option_list))
+
+if ( opt$version ) {
+  write(VERSION, stderr())
+  q('no')
+}
 
 logmsg = function(msg, llevel='INFO') {
   if ( opt$verbose ) {
