@@ -12,10 +12,8 @@
 # Author: daniel.lundin@lnu.se
 
 suppressPackageStartupMessages(library(optparse))
-suppressPackageStartupMessages(library(dada2))
-suppressPackageStartupMessages(library(ShortRead))
 
-VERSION = sprintf("dada2errmodels version 0.1, DADA2 version: %s", packageDescription('dada2')$Version)
+VERSION = sprintf("dada2errmodels version 0.9, DADA2 version: %s", packageDescription('dada2')$Version)
 
 # Get arguments
 option_list = list(
@@ -74,6 +72,10 @@ if ( opt$version ) {
   write(VERSION, stderr())
   q('no')
 }
+
+# Load DADA2 here, takes a long while...
+suppressPackageStartupMessages(library(dada2))
+suppressPackageStartupMessages(library(ShortRead))
 
 logmsg = function(msg, llevel='INFO') {
   if ( opt$verbose ) {
