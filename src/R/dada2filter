@@ -2,18 +2,13 @@
 
 # dada2filter
 #
-# This is the first script in a series of three that implements a DADA2-based
-# pipeline for correction of amplicon reads.
-#
 # Filters sequences using the fastqPairedFilter function in the dada2 package.
 #
 # Author: daniel.lundin@lnu.se
 
 suppressPackageStartupMessages(library(optparse))
-suppressPackageStartupMessages(library(dada2))
-suppressPackageStartupMessages(library(ShortRead))
 
-VERSION = sprintf("dada2filter version 0.1, DADA2 version: %s", packageDescription('dada2')$Version)
+VERSION = 0.9
 
 # Get arguments
 option_list = list(
@@ -42,6 +37,10 @@ option_list = list(
     help='Name pattern to identify reverse reads in file names, default ".r2".'
   ),
   make_option(
+    c("--rmphix"), action="store_true", default=FALSE, 
+    help="Remove phiX sequences. Currently fails (recursion in function call?)"
+  ),
+  make_option(
     c('--trimleft'), type='character', default="0,0",
     help='Comma separated pair of values for left truncation of forward and reverse reads respectively. Default "0,0".'
   ),
@@ -55,18 +54,18 @@ option_list = list(
   ),
   make_option(
     c("-v", "--verbose"), action="store_true", default=FALSE, 
-    help="Print progress messages."
+    help="Print progress messages"
   ),
   make_option(
-    c("--version"), action="store_true", default=FALSE, 
-    help="Show script version plus installed DADA2 version."
+    c("-V", "--version"), action="store_true", default=FALSE, 
+    help="Print version of script and DADA2 library"
   )
 )
 opt = parse_args(OptionParser(option_list=option_list))
 
 if ( opt$version ) {
-  write(VERSION, stderr())
-  q('no')
+  write(sprintf("dada2filter version %s, DADA2 library version %s", VERSION, packageVersion('dada2')), stderr())
+  q('no', 0)
 }
 
 logmsg = function(msg, llevel='INFO') {
@@ -95,6 +94,10 @@ if ( length(fwdinfiles) != length(revinfiles) ) {
   q('no', 1)
 }
 
+# The DADA2 library takes long to load, do here to avoid --help and --version takes so long...
+suppressPackageStartupMessages(library(dada2))
+suppressPackageStartupMessages(library(ShortRead))
+
 samples = sub(sprintf("%s.*", opt$fwdmark), "", basename(fwdinfiles))
 
 # Cutting sequences
@@ -121,8 +124,8 @@ if ( ! is.na(opt$maxee) ) {
 
 logmsg(
   sprintf(
-    "Running quality filtering, truncLen: %s, trimLeft: %s, maxN: %d, maxEE: %s, truncQ: %d, minQ: %d", 
-    paste(trunclen, collapse=','), paste(trimleft, collapse=','), 0, paste(maxee, collapse=','), opt$truncq, opt$minq
+    "Running quality filtering, truncLen: %s, trimLeft: %s, maxN: %d, maxEE: %s, truncQ: %d, minQ: %d, rm.phix: %s", 
+    paste(trunclen, collapse=','), paste(trimleft, collapse=','), 0, paste(maxee, collapse=','), opt$truncq, opt$minq, opt$rmphix
   )
 )
 for ( i in seq_along(fwdinfiles) ) {
@@ -132,7 +135,7 @@ for ( i in seq_along(fwdinfiles) ) {
     c(fwdfiltered[i], revfiltered[i]),
     truncLen = trunclen, trimLeft = trimleft,
     maxN = 0, maxEE = maxee, truncQ = opt$truncq, minQ = opt$minq,
-    rm.phix = T, compress = T, verbose = opt$verbose
+    rm.phix = opt$rmphix, compress = T, verbose = opt$verbose
   )
 }
 
