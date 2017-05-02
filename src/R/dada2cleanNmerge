@@ -12,7 +12,7 @@
 
 suppressPackageStartupMessages(library(optparse))
 
-VERSION = sprintf("dada2correction version 0.9, DADA2 version: %s", packageDescription('dada2')$Version)
+VERSION = sprintf("dada2cleanNmerge version 0.9, DADA2 version: %s", packageDescription('dada2')$Version)
 
 # Get arguments
 option_list = list(
@@ -29,7 +29,7 @@ option_list = list(
     help='Name pattern to identify forward reads in file names, default ".r1".'
   ),
   make_option(
-    c('--prefix'), type='character', default='dada2.filtered.merged',
+    c('--prefix'), type='character', default='dada2.cleaned.merged',
     help='Prefix for output files, default %default.'
   ),
   make_option(
@@ -118,7 +118,7 @@ seqtab.df = data.frame(t(seqtab)) %>% tibble::rownames_to_column('seq')
 seqtab.dfl = seqtab.df %>% gather(sample, count, 2:length(colnames(seqtab.df))) %>% filter(count>0)
 write_tsv(seqtab.dfl, sprintf("%s.tsv", opt$prefix))
 
-seqtab.sum = seqtab.dfl %>% summarise(n=n(), count=sum(count))
-logmsg(sprintf("%d sequences remaining, totalling %d observations", seqtab.sum$n[1], seqtab.sum$count[1]))
+seqtab.sum = seqtab.dfl %>% summarise(count=sum(count))
+logmsg(sprintf("%d sequences remaining, totalling %d observations", length(seqtab.df$seq), seqtab.sum$count[1]))
 
 logmsg("Done")
