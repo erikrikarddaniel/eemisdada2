@@ -116,7 +116,7 @@ saveRDS(seqtab, sprintf("%s.rds", opt$prefix))
 # Turn into a standard, long, data frame
 seqtab.df = data.frame(t(seqtab)) %>% tibble::rownames_to_column('seq')
 seqtab.dfl = seqtab.df %>% gather(sample, count, 2:length(colnames(seqtab.df))) %>% filter(count>0)
-write_tsv(seqtab.dfl, sprintf("%s.tsv", opt$prefix))
+write_tsv(seqtab.dfl, sprintf("%s.tsv.gz", opt$prefix))
 
 seqtab.sum = seqtab.dfl %>% summarise(count=sum(count))
 logmsg(sprintf("%d sequences remaining, totalling %d observations", length(seqtab.df$seq), seqtab.sum$count[1]))
