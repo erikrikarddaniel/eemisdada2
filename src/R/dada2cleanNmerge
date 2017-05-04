@@ -29,6 +29,14 @@ option_list = list(
     help='Name pattern to identify forward reads in file names, default ".r1".'
   ),
   make_option(
+    c('--maxmismatch', type='integer', default=0,
+    help="Maximum number of non matching bases in merge, default %default."
+  ),
+  make_option(
+    c('--minoverlap', type='integer', default=20,
+    help="Minimum number of overlapping bases in merge, default %default."
+  ),
+  make_option(
     c('--prefix'), type='character', default='dada2.cleaned.merged',
     help='Prefix for output files, default %default.'
   ),
@@ -98,7 +106,10 @@ for ( s in samples ) {
   revderep = derepFastq(revfiltered[[s]])
   revdada2 = dada(revderep, err=reverr, multithread=T)
   logmsg("	merging")
-  merge = mergePairs(fwddada2, fwdderep, revdada2, revderep)
+  merge = mergePairs(
+    fwddada2, fwdderep, revdada2, revderep, 
+    minOverlap=opt$minoverlap, maxMismatch=opt$maxmismatch
+  )
   mergers[[s]] = merge
 }
 saveRDS(fwddada2, 'fwddada2.rds')
@@ -106,8 +117,6 @@ saveRDS(revdada2, 'revdada2.rds')
 saveRDS(mergers, 'mergers.rds')
 rm(fwdderep); rm(fwddada2)
 rm(revderep); rm(revdada2)
-
-mergers = readRDS('mergers.rds')
 
 logmsg("Constructing sequence table and removing chimeras")
 seqtab = makeSequenceTable(mergers)
