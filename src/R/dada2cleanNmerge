@@ -12,7 +12,7 @@
 
 suppressPackageStartupMessages(library(optparse))
 
-VERSION = sprintf("dada2cleanNmerge version 0.9, DADA2 version: %s", packageDescription('dada2')$Version)
+VERSION = sprintf("dada2cleanNmerge version 0.9.1, DADA2 version: %s", packageDescription('dada2')$Version)
 
 # Get arguments
 option_list = list(
@@ -29,11 +29,11 @@ option_list = list(
     help='Name pattern to identify forward reads in file names, default ".r1".'
   ),
   make_option(
-    c('--maxmismatch', type='integer', default=0,
+    c('--maxmismatch'), type='integer', default=0,
     help="Maximum number of non matching bases in merge, default %default."
   ),
   make_option(
-    c('--minoverlap', type='integer', default=20,
+    c('--minoverlap'), type='integer', default=20,
     help="Minimum number of overlapping bases in merge, default %default."
   ),
   make_option(
