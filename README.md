@@ -8,7 +8,8 @@ results:
 
 1. `dada2filter`: quality and length trimming
 2. `dada2errmodels`: calculation of error models from the data
-3. `dada2correction`: sequence correction, bimera filtering and table creation
+3. `dada2cleanNmerge`: sequence correction and merge
+4. `dada2bimeras`: filter bimeras, create final tables
 
 In my [`biomakefiles`
 repository](https://github.com/erikrikarddaniel/biomakefiles), there's a
