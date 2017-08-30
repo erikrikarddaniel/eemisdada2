@@ -13,7 +13,7 @@
 
 suppressPackageStartupMessages(library(optparse))
 
-VERSION = sprintf("dada2errmodels version 0.9, DADA2 version: %s", packageDescription('dada2')$Version)
+VERSION = sprintf("dada2errmodels version 1.0, DADA2 version: %s", packageDescription('dada2')$Version)
 
 # Get arguments
 option_list = list(
