@@ -12,10 +12,14 @@
 
 suppressPackageStartupMessages(library(optparse))
 
-VERSION = sprintf("dada2cleanNmerge version 1.0, DADA2 version: %s", packageDescription('dada2')$Version)
+VERSION = sprintf("dada2cleanNmerge version 1.1, DADA2 version: %s", packageDescription('dada2')$Version)
 
 # Get arguments
 option_list = list(
+  make_option(
+    c("--concatenate"), action="store_true", default=FALSE, 
+    help="Concatenate sequences instead of try to merge (use when overlap is too short), default %default."
+  ),
   make_option(
     c('--filterdir'), type='character', default='filtered',
     help='Directory for quality truncated reads, default "filtered". Will be created if it does not exist.'
@@ -106,10 +110,14 @@ for ( s in samples ) {
   revderep = derepFastq(revfiltered[[s]])
   revdada2 = dada(revderep, err=reverr, multithread=T)
   logmsg("	merging")
-  merge = mergePairs(
-    fwddada2, fwdderep, revdada2, revderep, 
-    minOverlap=opt$minoverlap, maxMismatch=opt$maxmismatch
-  )
+  if ( opt$concatenate ) {
+    merge <- mergePairs(fwddada2, fwdderep, revdada2, revderep, justConcatenate = TRUE)
+  } else {
+    merge = mergePairs(
+      fwddada2, fwdderep, revdada2, revderep, 
+      minOverlap=opt$minoverlap, maxMismatch=opt$maxmismatch
+    )
+  }
   mergers[[s]] = merge
 }
 saveRDS(fwddada2, 'fwddada2.rds')
