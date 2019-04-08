@@ -109,10 +109,11 @@ for ( s in samples ) {
   logmsg("	reverse")
   revderep = derepFastq(revfiltered[[s]])
   revdada2 = dada(revderep, err=reverr, multithread=T)
-  logmsg("	merging")
   if ( opt$concatenate ) {
+    logmsg("	* concatenating *")
     merge <- mergePairs(fwddada2, fwdderep, revdada2, revderep, justConcatenate = TRUE)
   } else {
+    logmsg("	merging")
     merge = mergePairs(
       fwddada2, fwdderep, revdada2, revderep, 
       minOverlap=opt$minoverlap, maxMismatch=opt$maxmismatch
