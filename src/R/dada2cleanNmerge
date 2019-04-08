@@ -120,11 +120,6 @@ for ( s in samples ) {
   }
   mergers[[s]] = merge
 }
-saveRDS(fwddada2, 'fwddada2.rds')
-saveRDS(revdada2, 'revdada2.rds')
-saveRDS(mergers, 'mergers.rds')
-rm(fwdderep); rm(fwddada2)
-rm(revderep); rm(revdada2)
 
 logmsg("Constructing sequence table and removing chimeras")
 seqtab = makeSequenceTable(mergers)
