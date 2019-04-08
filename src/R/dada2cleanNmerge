@@ -18,7 +18,7 @@ VERSION = sprintf("dada2cleanNmerge version 1.1, DADA2 version: %s", packageDesc
 option_list = list(
   make_option(
     c("--concatenate"), action="store_true", default=FALSE, 
-    help="Concatenate sequences instead of try to merge (use when overlap is too short), default %default."
+    help="Concatenate sequences instead of try to merge (use when overlap is too short), default %default. Setting this overrides --maxmismatch and --minoverlap."
   ),
   make_option(
     c('--filterdir'), type='character', default='filtered',
