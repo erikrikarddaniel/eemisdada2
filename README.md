@@ -24,6 +24,8 @@ they can be installed with this command:
 $ sudo apt install libcurl4-gnutls-dev
 ```
 
+The Bioconductor package [DECIPHER](https://bioconductor.org/packages/release/bioc/html/DECIPHER.html) is also required.
+
 ## Installation
 
 The scripts in this repository are easiest to install by cloning the repo and 
