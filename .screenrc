@@ -4,6 +4,8 @@ setenv ROOT $PWD
 screen -t rstudio
 chdir src/R
 screen -t R
+chdir $ROOT/testdata
+screen -t testdata
 chdir $ROOT
 screen -t man
 screen -t root
