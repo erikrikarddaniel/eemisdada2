@@ -39,4 +39,4 @@ GTDB_r89-mod_June2019.RData:
 atacama_reads.qza:
 	wget -O $@ https://docs.qiime2.org/2019.7/data/tutorials/atacama-soils/demux.qza
 	@echo "Downloaded $@, you need to unpack it with 'qiime tools export --input-path $@ --output-path reads'."
-	@echo "To make a selection of 17 large samples: 'find reads -name "*_R1_*" -size -100000c|xargs rm; for f in reads/*_R2_*; do if [ ! -e $${f/_R2_/_R1_} ]; then rm $$f; fi; done'"
+	@echo "To make a selection of 17 large samples: 'find reads -name "*_R1_*" -size -100000c|xargs rm; for f in reads/*_R2_*; do if [ ! -e \$${f/_R2_/_R1_} ]; then rm \$$f; fi; done'"
