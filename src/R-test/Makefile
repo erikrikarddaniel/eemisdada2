@@ -16,6 +16,8 @@ dada2errmodels: dada2errmodels.00
 
 dada2cleanNmerge: dada2cleanNmerge.00
 
+dada2bimeras: dada2bimeras.00
+
 dada2taxonomy: dada2taxonomy.00
 
 dada2filter.00:
@@ -33,6 +35,11 @@ dada2cleanNmerge.00:
 	if [ ! -e seq.dada2errmodels.fwd.errorates.rds ] || [ ! -e seq.dada2errmodels.rev.errorates.rds ]; then echo "*** You must run make dada2errmodels to create input data ***"; exit 1; fi
 	../R/dada2cleanNmerge.R --verbose --filterdir=filtered --fwdmark=_R1_ --revmark=_R2_ --fwderrmodel=seq.dada2errmodels.fwd.errorates.rds --reverrmodel=seq.dada2errmodels.rev.errorates.rds
 	@ls -l dada2.cleaned.merged.tsv.gz | sed 's/^[^ ]* [0-9] [^ ]* [^ ]* \( *[0-9]*\) ... [0-9]\+ ..:.. \(.*\)/\1 \2/' > $@.out
+	@$(CHECK)
+
+dada2bimeras.00:
+	../R/dada2bimeras.R --verbose --method=consensus --minab=4 --seqtabfile=dada2.cleaned.merged.rds
+	@ls -l dada2.cleaned.merged.bimera.tsv.gz | sed 's/^[^ ]* [0-9] [^ ]* [^ ]* \( *[0-9]*\) ... [0-9]\+ ..:.. \(.*\)/\1 \2/' > $@.out
 	@$(CHECK)
 
 dada2taxonomy.00:
