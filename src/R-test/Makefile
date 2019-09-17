@@ -8,7 +8,7 @@ DIFF = grep -v "^[ ]*$$" $@.out | diff $@.expect -
 
 CHECK = if [ ` $(DIFF) | wc -l ` -eq 0 ]; then echo "*** $@ OK ***"; else echo "*** $@ FAILED ***"; echo "Here's a diff: "; $(DIFF); exit 1; fi
 
-all: dada2filter dada2errmodels dada2taxnomy
+all: dada2filter dada2errmodels dada2cleanNmerge dada2bimeras dada2taxonomy
 
 dada2filter: dada2filter.00
 
