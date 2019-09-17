@@ -18,7 +18,7 @@ dada2filter.00:
 	@$(CHECK)
 
 dada2taxonomy.00:
-	../R/dada2taxonomy.R --verbose \
+	../R/dada2taxonomy.R --verbose --seed 42 \
 	  --rdp_fasta ../../testdata/silva.fna.gz \
 	  --idtaxa_rdata ../../testdata/SILVA_SSU_r132_March2018.RData \
 	  --species_fasta ../../testdata/silva_species.fna.gz ../../testdata/fifty_16S_sequences.fna
