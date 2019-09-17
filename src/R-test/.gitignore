@@ -1,3 +1,4 @@
 filtered/
 *.out
 *.tsv.gz
+*.rds

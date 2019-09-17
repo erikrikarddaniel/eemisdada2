@@ -80,7 +80,6 @@ logmsg = function(msg, llevel='INFO') {
 
 # I can't get type = 'integer' to work above...
 opt$options$seed <- as.integer(opt$options$seed)
-logmsg(sprintf("seed: %d, typeof: %s", opt$options$seed, typeof(opt$options$seed)))
 if ( opt$options$seed > 0 ) set.seed(opt$options$seed)
 
 for ( f in opt$args ) {

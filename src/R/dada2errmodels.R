@@ -58,6 +58,10 @@ option_list = list(
     help='Name pattern to identify reverse reads in file names, default ".r2".'
   ),
   make_option(
+    c("--seed"), default = '0', 
+    help = "Set seed for random number generation, default don't set."
+  ),
+  make_option(
     c("-v", "--verbose"), action="store_true", default=FALSE, 
     help="Print progress messages"
   ),
@@ -85,6 +89,10 @@ logmsg = function(msg, llevel='INFO') {
     )
   }
 }
+
+# I can't get type = 'integer' to work above...
+opt$seed <- as.integer(opt$seed)
+if ( opt$seed > 0 ) set.seed(opt$seed)
 
 logmsg(
   sprintf(

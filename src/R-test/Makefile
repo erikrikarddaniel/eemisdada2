@@ -8,13 +8,23 @@ DIFF = grep -v "^[ ]*$$" $@.out | diff $@.expect -
 
 CHECK = if [ ` $(DIFF) | wc -l ` -eq 0 ]; then echo "*** $@ OK ***"; else echo "*** $@ FAILED ***"; echo "Here's a diff: "; $(DIFF); exit 1; fi
 
+all: dada2filter dada2errmodels dada2taxnomy
+
 dada2filter: dada2filter.00
+
+dada2errmodels: dada2errmodels.00
 
 dada2taxonomy: dada2taxonomy.00
 
 dada2filter.00:
 	../R/dada2filter.R --verbose --indir ../../testdata/reads/ --fwdmark _R1_ --revmark _R2_ --trimleft 13,13 --trunclen 150,150
 	@ls -l filtered/ | grep -v 'total' | sed 's/^[^ ]* [0-9] [^ ]* [^ ]* \( *[0-9]*\) ... [0-9]\+ ..:.. \(.*\)/\1 \2/' > $@.out
+	@$(CHECK)
+
+dada2errmodels.00:
+	@if [ ! -e filtered ] && [ $$(ls filtered/*.fastq.gz 2>/dev/null | wc -l) -eq 0 ]; then echo "*** You must run 'make dada2filter' first to create input data ***"; exit 1; fi
+	../R/dada2errmodels.R --verbose --seed=42 --filterdir=filtered --fwdmark=_R1_ --revmark=_R2_ --nsamples=10 
+	@ls -l *.errorates.rds | sed 's/^[^ ]* [0-9] [^ ]* [^ ]* \( *[0-9]*\) ... [0-9]\+ ..:.. \(.*\)/\1 \2/' > $@.out
 	@$(CHECK)
 
 dada2taxonomy.00:
