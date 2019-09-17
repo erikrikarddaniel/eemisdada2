@@ -29,6 +29,10 @@ option_list = list(
     help = "Name of fasta file with classified sequences for species assignment."
   ),
   make_option(
+    c("--seed"), default = '0', 
+    help = "Set seed for random number generation, default don't set."
+  ),
+  make_option(
     c("-v", "--verbose"), action="store_true", default=FALSE, 
     help="Print progress messages"
   ),
@@ -73,6 +77,11 @@ logmsg = function(msg, llevel='INFO') {
     )
   }
 }
+
+# I can't get type = 'integer' to work above...
+opt$options$seed <- as.integer(opt$options$seed)
+if ( opt$options$seed > 0 ) set.seed(opt$options$seed)
+
 for ( f in opt$args ) {
   bf = sub('(.+)(\\.fasta)|(\\.fna)|(\\.fa)|(\\.RData)(.gz)?', '\\1', basename(f))
   logmsg(sprintf("Handling %s, writing output to files starting with %s", f, bf))

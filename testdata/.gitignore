@@ -1,2 +1,4 @@
 *.gz
 *.RData
+reads/*
+*.qza

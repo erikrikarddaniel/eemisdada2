@@ -33,11 +33,11 @@ option_list = list(
     help='Parent overabundance multiplier, default %default. See R doc for isBimeraDenovo.'
   ),
   make_option(
-    c('--prefix'), type='character', default='dada2.filtered.merged.bimera',
+    c('--prefix'), type='character', default='dada2.cleaned.merged.bimera',
     help='Prefix for output files, default %default.'
   ),
   make_option(
-    c('--seqtabfile'), type='character', default='dada2.filtered.merged.rds',
+    c('--seqtabfile'), type='character', default='dada2.cleaned.merged.rds',
     help='RDS file with seqtab object from dada2cleanNmerge, default %default.'
   ),
   make_option(
