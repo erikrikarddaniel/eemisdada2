@@ -126,7 +126,6 @@ if ( opt$fwd ) {
     err=NULL, selfConsist=TRUE, multithread=TRUE,
     MAX_CONSIST = opt$maxconsist
   )
-  saveRDS(fwdlearn, sprintf('%s.dada2errmodels.fwd.rds', opt$prefix))
   fwderr = fwdlearn[[1]]$err_out
   saveRDS(fwderr, sprintf('%s.dada2errmodels.fwd.errorates.rds', opt$prefix))
 }
@@ -139,7 +138,6 @@ if ( opt$rev ) {
     err=NULL, selfConsist=TRUE, multithread=TRUE,
     MAX_CONSIST = opt$maxconsist
   )
-  saveRDS(revlearn, sprintf('%s.dada2errmodels.rev.rds', opt$prefix))
   reverr = revlearn[[1]]$err_out
   saveRDS(reverr, sprintf('%s.dada2errmodels.rev.errorates.rds', opt$prefix))
 }
