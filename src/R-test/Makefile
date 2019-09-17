@@ -10,7 +10,17 @@ CHECK = if [ ` $(DIFF) | wc -l ` -eq 0 ]; then echo "*** $@ OK ***"; else echo "
 
 dada2filter: dada2filter.00
 
+dada2taxonomy: dada2taxonomy.00
+
 dada2filter.00:
 	../R/dada2filter.R --verbose --indir ../../testdata/reads/ --fwdmark _R1_ --revmark _R2_ --trimleft 13,13 --trunclen 150,150
 	@ls -l filtered/ | grep -v 'total' | sed 's/^[^ ]* [0-9] [^ ]* [^ ]* \( *[0-9]*\) ... [0-9]\+ ..:.. \(.*\)/\1 \2/' > $@.out
+	@$(CHECK)
+
+dada2taxonomy.00:
+	../R/dada2taxonomy.R --verbose \
+	  --rdp_fasta ../../testdata/silva.fna.gz \
+	  --idtaxa_rdata ../../testdata/SILVA_SSU_r132_March2018.RData \
+	  --species_fasta ../../testdata/silva_species.fna.gz ../../testdata/fifty_16S_sequences.fna
+	@gunzip -c fifty_16S_sequences.idtaxa.silva.tsv.gz fifty_16S_sequences.rdp.silva.tsv.gz > $@.out
 	@$(CHECK)
