@@ -1,6 +1,6 @@
 # Makefile for automatic and manual tests.
 #
-# First, download testdata in ../../testdata: make all
+# First, download testdata in ../../testdata: 'make all'
 #
 # Run test for individual steps using the targets here
 #
@@ -26,18 +26,19 @@ dada2filter.00:
 	@$(CHECK)
 
 dada2errmodels.00:
-	@if [ ! -e filtered ] && [ $$(ls filtered/*.fastq.gz 2>/dev/null | wc -l) -eq 0 ]; then echo "*** You must run 'make dada2filter' first to create input data ***"; exit 1; fi
+	@if [ ! -e filtered ] && [ $$(ls filtered/*.fastq.gz 2>/dev/null | wc -l) -eq 0 ]; then echo "*** You must run 'make dada2filter' (or try 'make all') first to create input data ***"; exit 1; fi
 	../R/dada2errmodels.R --verbose --seed=42 --filterdir=filtered --fwdmark=_R1_ --revmark=_R2_ --nsamples=10 
 	@ls -l *.errorates.rds | sed 's/^[^ ]* [0-9] [^ ]* [^ ]* \( *[0-9]*\) ... [0-9]\+ ..:.. \(.*\)/\1 \2/' > $@.out
 	@$(CHECK)
 
 dada2cleanNmerge.00:
-	if [ ! -e seq.dada2errmodels.fwd.errorates.rds ] || [ ! -e seq.dada2errmodels.rev.errorates.rds ]; then echo "*** You must run make dada2errmodels to create input data ***"; exit 1; fi
+	@if [ ! -e seq.dada2errmodels.fwd.errorates.rds ] || [ ! -e seq.dada2errmodels.rev.errorates.rds ]; then echo "*** You must run 'make dada2errmodels' (or try 'make all') to create input data ***"; exit 1; fi
 	../R/dada2cleanNmerge.R --verbose --filterdir=filtered --fwdmark=_R1_ --revmark=_R2_ --fwderrmodel=seq.dada2errmodels.fwd.errorates.rds --reverrmodel=seq.dada2errmodels.rev.errorates.rds
 	@ls -l dada2.cleaned.merged.tsv.gz | sed 's/^[^ ]* [0-9] [^ ]* [^ ]* \( *[0-9]*\) ... [0-9]\+ ..:.. \(.*\)/\1 \2/' > $@.out
 	@$(CHECK)
 
 dada2bimeras.00:
+	@if [ ! -e dada2.cleaned.merged.rds ]; then echo "*** You must run 'make dada2cleanNmerge' (or try 'make all') to create input data ***"; exit 1; fi
 	../R/dada2bimeras.R --verbose --method=consensus --minab=4 --seqtabfile=dada2.cleaned.merged.rds
 	@ls -l dada2.cleaned.merged.bimera.tsv.gz | sed 's/^[^ ]* [0-9] [^ ]* [^ ]* \( *[0-9]*\) ... [0-9]\+ ..:.. \(.*\)/\1 \2/' > $@.out
 	@$(CHECK)
