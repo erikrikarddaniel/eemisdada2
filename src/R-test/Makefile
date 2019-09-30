@@ -8,7 +8,7 @@ DIFF = grep -v "^[ ]*$$" $@.out | diff $@.expect -
 
 CHECK = if [ ` $(DIFF) | wc -l ` -eq 0 ]; then echo "*** $@ OK ***"; else echo "*** $@ FAILED ***"; echo "Here's a diff: "; $(DIFF); exit 1; fi
 
-all: dada2filter dada2errmodels dada2cleanNmerge dada2bimeras dada2taxonomy
+all: dada2filter dada2errmodels dada2cleanNmerge dada2bimeras dada2idseq dada2taxonomy
 
 dada2filter: dada2filter.00
 
@@ -17,6 +17,8 @@ dada2errmodels: dada2errmodels.00
 dada2cleanNmerge: dada2cleanNmerge.00
 
 dada2bimeras: dada2bimeras.00
+
+dada2idseq: dada2idseq.00 dada2idseq.01
 
 dada2taxonomy: dada2taxonomy.00
 
@@ -43,8 +45,20 @@ dada2bimeras.00:
 	@ls -l dada2.cleaned.merged.bimera.tsv.gz | sed 's/^[^ ]* [0-9] [^ ]* [^ ]* \( *[0-9]*\) ... [0-9]\+ ..:.. \(.*\)/\1 \2/' > $@.out
 	@$(CHECK)
 
+dada2idseq.00:
+	@rm -f $@.out
+	@../R/dada2idseq.R --verbose --prefix=S_ --fnafile=$@.out --outtable=$@.out.tsv.gz $@.tsv.gz
+	@gunzip -c $@.out.tsv.gz >> $@.out
+	@$(CHECK)
+
+dada2idseq.01:
+	@cp $@.fna $@.out
+	@../R/dada2idseq.R --verbose --prefix=S_ --fnafile=$@.out --outtable=$@.out.tsv.gz $@.tsv.gz
+	@gunzip -c $@.out.tsv.gz >> $@.out
+	@$(CHECK)
+
 dada2taxonomy.00:
-	../R/dada2taxonomy.R --verbose --seed 42 \
+	@../R/dada2taxonomy.R --verbose --seed 42 \
 	  --rdp_fasta ../../testdata/silva.fna.gz \
 	  --idtaxa_rdata ../../testdata/SILVA_SSU_r132_March2018.RData \
 	  --species_fasta ../../testdata/silva_species.fna.gz ../../testdata/fifty_16S_sequences.fna
