@@ -13,7 +13,7 @@ suppressPackageStartupMessages(library(Biostrings))
 suppressPackageStartupMessages(library(readr))
 suppressPackageStartupMessages(library(dplyr))
 
-SCRIPT_VERSION = "0.1"
+SCRIPT_VERSION = "0.1.1"
 
 # Get arguments
 # For testing: opt <- list(args = 'dada2idseq.00.tsv.gz', options = list(fnafile = 'dada2idseq.01.fna', idlen = 9, prefix = 'S_'))
@@ -97,7 +97,7 @@ seqtab <- read_tsv(
 # missing from input fna
 seqname_format = sprintf("%%s%%0%dd", opt$options$idlen)
 seqs <- seqtab %>% distinct(seq) %>%
-  left_join(seqs, by = 'seq') %>%
+  full_join(seqs, by = 'seq') %>%
   mutate(
     seqname = ifelse(
       is.na(seqname), 
