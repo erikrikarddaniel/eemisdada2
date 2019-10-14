@@ -18,7 +18,7 @@ dada2cleanNmerge: dada2cleanNmerge.00
 
 dada2bimeras: dada2bimeras.00
 
-dada2idseq: dada2idseq.00 dada2idseq.01
+dada2idseq: dada2idseq.00 dada2idseq.01 dada2idseq.02
 
 dada2taxonomy: dada2taxonomy.00
 
@@ -52,6 +52,12 @@ dada2idseq.00:
 	@$(CHECK)
 
 dada2idseq.01:
+	@cp $@.fna $@.out
+	@../R/dada2idseq.R --verbose --prefix=S_ --fnafile=$@.out --outtable=$@.out.tsv.gz $@.tsv.gz
+	@gunzip -c $@.out.tsv.gz >> $@.out
+	@$(CHECK)
+
+dada2idseq.02:
 	@cp $@.fna $@.out
 	@../R/dada2idseq.R --verbose --prefix=S_ --fnafile=$@.out --outtable=$@.out.tsv.gz $@.tsv.gz
 	@gunzip -c $@.out.tsv.gz >> $@.out

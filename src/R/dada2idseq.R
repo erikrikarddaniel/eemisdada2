@@ -13,7 +13,7 @@ suppressPackageStartupMessages(library(Biostrings))
 suppressPackageStartupMessages(library(readr))
 suppressPackageStartupMessages(library(dplyr))
 
-SCRIPT_VERSION = "0.2"
+SCRIPT_VERSION = "0.2.1"
 
 # Get arguments
 # For testing: opt <- list(args = 'dada2idseq.00.tsv.gz', options = list(fnafile = 'dada2idseq.01.fna', idlen = 9, prefix = 'S_'))
@@ -79,7 +79,11 @@ if ( file.exists(opt$options$fnafile) ) {
   seqs <- data.frame(seq = readDNAStringSet(opt$options$fnafile)) %>%
     tibble::rownames_to_column('seqname') %>%
     mutate(seqnum = sub(opt$options$prefix, '', seqname) %>% as.integer())
-  max_seqnum = seqs %>% filter(seqnum == max(seqnum)) %>% pull(seqnum)
+  max_seqnum = ifelse(
+    nrow(seqs) > 0, 
+    seqs %>% filter(seqnum == max(seqnum)) %>% pull(seqnum),
+    0
+  )
 } else {
   seqs <- tibble(seqname = character(), seq = character(), seqnum = integer())
   max_seqnum = 0
@@ -99,8 +103,8 @@ seqname_format = sprintf("%%s%%0%dd", opt$options$idlen)
 seqs <- seqs %>% select(-seqnum) %>%
   union(
     seqtab %>% distinct(seq) %>%
-    anti_join(seqs, by = 'seq') %>%
-    mutate(seqname = sprintf(seqname_format, opt$options$prefix, max_seqnum + rank(seq)))
+      anti_join(seqs, by = 'seq') %>%
+      mutate(seqname = sprintf(seqname_format, opt$options$prefix, max_seqnum + rank(seq)))
   )
 
 logmsg(sprintf("Writing %d sequences to %s fasta file", nrow(seqs), opt$options$fnafile))
