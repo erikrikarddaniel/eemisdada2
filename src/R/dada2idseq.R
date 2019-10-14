@@ -13,7 +13,7 @@ suppressPackageStartupMessages(library(Biostrings))
 suppressPackageStartupMessages(library(readr))
 suppressPackageStartupMessages(library(dplyr))
 
-SCRIPT_VERSION = "0.1.1"
+SCRIPT_VERSION = "0.2"
 
 # Get arguments
 # For testing: opt <- list(args = 'dada2idseq.00.tsv.gz', options = list(fnafile = 'dada2idseq.01.fna', idlen = 9, prefix = 'S_'))
@@ -51,7 +51,7 @@ opt = parse_args(
     usage = "%prog [options] seqtable.tsv[.gz]
 
     Reads seqtable.tsv[.gz] (long format: seq, sample, count) and, if 
-    existing, a fasta file with old sequences, and outtables a fasta file with
+    existing, a fasta file with old sequences, and outputs a fasta file with
     unique sequences plus a new table with sequence names instead of
     sequences.",
     option_list = option_list
@@ -96,14 +96,11 @@ seqtab <- read_tsv(
 # Join unique sequences from the two tables, create new seqname for those
 # missing from input fna
 seqname_format = sprintf("%%s%%0%dd", opt$options$idlen)
-seqs <- seqtab %>% distinct(seq) %>%
-  full_join(seqs, by = 'seq') %>%
-  mutate(
-    seqname = ifelse(
-      is.na(seqname), 
-      sprintf(seqname_format, opt$options$prefix, rank(seq)), 
-      seqname
-    )
+seqs <- seqs %>% select(-seqnum) %>%
+  union(
+    seqtab %>% distinct(seq) %>%
+    anti_join(seqs, by = 'seq') %>%
+    mutate(seqname = sprintf(seqname_format, opt$options$prefix, max_seqnum + rank(seq)))
   )
 
 logmsg(sprintf("Writing %d sequences to %s fasta file", nrow(seqs), opt$options$fnafile))
