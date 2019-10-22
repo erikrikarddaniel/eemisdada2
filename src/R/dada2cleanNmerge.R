@@ -12,7 +12,7 @@
 
 suppressPackageStartupMessages(library(optparse))
 
-VERSION = sprintf("dada2cleanNmerge version 1.1, DADA2 version: %s", packageDescription('dada2')$Version)
+VERSION = sprintf("dada2cleanNmerge version 1.1.1, DADA2 version: %s", packageDescription('dada2')$Version)
 
 # Get arguments
 option_list = list(
@@ -64,7 +64,7 @@ option_list = list(
 opt = parse_args(OptionParser(option_list=option_list))
 
 if ( opt$version ) {
-  write(VERSION, stderr())
+  write(VERSION, stdout())
   q('no')
 }
 
