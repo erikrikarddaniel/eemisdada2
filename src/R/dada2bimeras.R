@@ -29,7 +29,7 @@ option_list = list(
     help='Do not allow one off bimeras. See R doc for isBimeraDenovo.'
   ),
   make_option(
-    c('--overab'), type='integer', default=1,
+    c('--overab'), type='integer', default=2,
     help='Parent overabundance multiplier, default %default. See R doc for isBimeraDenovo.'
   ),
   make_option(
