@@ -8,7 +8,7 @@ DIFF = grep -v "^[ ]*$$" $@.out | diff $@.expect -
 
 CHECK = if [ ` $(DIFF) | wc -l ` -eq 0 ]; then echo "*** $@ OK ***"; else echo "*** $@ FAILED ***"; echo "Here's a diff: "; $(DIFF); exit 1; fi
 
-all: dada2filter dada2errmodels dada2cleanNmerge dada2bimeras dada2idseq dada2taxonomy
+all: dada2filter dada2errmodels dada2cleanNmerge dada2bimeras dada2idseq dada2taxonomy dada2wf
 
 dada2filter: dada2filter.00
 
@@ -17,6 +17,8 @@ dada2errmodels: dada2errmodels.00
 dada2cleanNmerge: dada2cleanNmerge.00
 
 dada2bimeras: dada2bimeras.00
+
+dada2wf: dada2wf.00
 
 dada2idseq: dada2idseq.00 dada2idseq.01 dada2idseq.02
 
@@ -35,14 +37,22 @@ dada2errmodels.00:
 
 dada2cleanNmerge.00:
 	@if [ ! -e seq.dada2errmodels.fwd.errorates.rds ] || [ ! -e seq.dada2errmodels.rev.errorates.rds ]; then echo "*** You must run 'make dada2errmodels' (or try 'make all') to create input data ***"; exit 1; fi
-	../R/dada2cleanNmerge.R --verbose --filterdir=filtered --fwdmark=_R1_ --revmark=_R2_ --fwderrmodel=seq.dada2errmodels.fwd.errorates.rds --reverrmodel=seq.dada2errmodels.rev.errorates.rds
+	../R/dada2cleanNmerge.R --seed 42 --verbose --filterdir=filtered --fwdmark=_R1_ --revmark=_R2_ --fwderrmodel=seq.dada2errmodels.fwd.errorates.rds --reverrmodel=seq.dada2errmodels.rev.errorates.rds
 	@ls -l dada2.cleaned.merged.tsv.gz | sed 's/^[^ ]* [0-9] [^ ]* [^ ]* \( *[0-9]*\) ... [0-9]\+ ..:.. \(.*\)/\1 \2/' > $@.out
 	@$(CHECK)
 
 dada2bimeras.00:
 	@if [ ! -e dada2.cleaned.merged.rds ]; then echo "*** You must run 'make dada2cleanNmerge' (or try 'make all') to create input data ***"; exit 1; fi
-	../R/dada2bimeras.R --verbose --method=consensus --minab=4 --seqtabfile=dada2.cleaned.merged.rds
+	../R/dada2bimeras.R --seed 42 --verbose --method=consensus --minab=4 --seqtabfile=dada2.cleaned.merged.rds
 	@ls -l dada2.cleaned.merged.bimera.tsv.gz | sed 's/^[^ ]* [0-9] [^ ]* [^ ]* \( *[0-9]*\) ... [0-9]\+ ..:.. \(.*\)/\1 \2/' > $@.out
+	@$(CHECK)
+
+dada2wf.00:
+	../R/dada2wf.R --verbose --seed 42 --indir ../../testdata/reads/ --fwdmark _R1_ --revmark _R2_ --trimleft 13,13 --trunclen 150,150 --nsamples=10 --method=consensus --minab=4
+	@ls -l filtered/ | grep -v 'total' | sed 's/^[^ ]* [0-9] [^ ]* [^ ]* \( *[0-9]*\) ... [0-9]\+ ..:.. \(.*\)/\1 \2/' > $@.out
+	@ls -l *.errorates.rds | sed 's/^[^ ]* [0-9] [^ ]* [^ ]* \( *[0-9]*\) ... [0-9]\+ ..:.. \(.*\)/\1 \2/' >> $@.out
+	@ls -l dada2.cleaned.merged.tsv.gz | sed 's/^[^ ]* [0-9] [^ ]* [^ ]* \( *[0-9]*\) ... [0-9]\+ ..:.. \(.*\)/\1 \2/' >> $@.out
+	@ls -l dada2.cleaned.merged.bimera.tsv.gz | sed 's/^[^ ]* [0-9] [^ ]* [^ ]* \( *[0-9]*\) ... [0-9]\+ ..:.. \(.*\)/\1 \2/' >> $@.out
 	@$(CHECK)
 
 dada2idseq.00:
