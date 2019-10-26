@@ -13,7 +13,7 @@
 
 suppressPackageStartupMessages(library(optparse))
 
-VERSION = sprintf("dada2errmodels version 1.0.1, DADA2 version: %s", packageDescription('dada2')$Version)
+VERSION = sprintf("dada2errmodels version 1.1.0, DADA2 version: %s", packageDescription('dada2')$Version)
 
 # Get arguments
 option_list = list(
@@ -114,6 +114,14 @@ names(revfiltered) = samples
 # Learning the error models
 if ( opt$nsamples == 0 ) {
   nsamples = length(samples) %/% 8 + 1
+} else if ( opt$nsamples > length(samples) ) {
+  logmsg(
+    sprintf(
+      "You asked for %d samples to estimate error rates from, but only %d present, using %d",
+      opt$nsamples, length(samples), length(samples)
+    )
+  )
+  nsamples = length(samples)
 } else {
   nsamples = opt$nsamples
 }

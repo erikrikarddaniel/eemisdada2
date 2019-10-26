@@ -8,7 +8,7 @@
 
 suppressPackageStartupMessages(library(optparse))
 
-VERSION = 1.0.1
+VERSION = "1.0.1"
 
 # Get arguments
 option_list = list(

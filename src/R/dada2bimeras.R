@@ -37,6 +37,10 @@ option_list = list(
     help='Prefix for output files, default %default.'
   ),
   make_option(
+    c("--seed"), default = '0', 
+    help = "Set seed for random number generation, default don't set."
+  ),
+  make_option(
     c('--seqtabfile'), type='character', default='dada2.cleaned.merged.rds',
     help='RDS file with seqtab object from dada2cleanNmerge, default %default.'
   ),
@@ -70,6 +74,10 @@ logmsg = function(msg, llevel='INFO') {
     )
   }
 }
+
+# I can't get type = 'integer' to work above...
+opt$seed <- as.integer(opt$seed)
+if ( opt$seed > 0 ) set.seed(opt$seed)
 
 # Read sequence table object from cleanNmerge step
 
