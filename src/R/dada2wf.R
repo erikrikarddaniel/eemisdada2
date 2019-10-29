@@ -13,6 +13,7 @@ suppressPackageStartupMessages(library(tidyr))
 
 SCRIPT_VERSION = "0.9"
 
+# opt <- list(options = list('seed' = 42, 'verbose' = TRUE, 'indir' = '../../testdata/reads/', 'fwdmark' = '_R1_', 'revmark' = '_R2_', 'trimleft' = "13,13", 'trunclen' = "150,150", 'nsamples' = 10, 'method' = 'consensus', 'minab' = 4, 'filterdir' = 'filtered', 'minq' = 0, 'truncq' = 2, 'rmphix' = FALSE, 'maxee' = NA, 'fwd' = TRUE, 'rev' = TRUE, 'maxconsist' = 10, 'seqfile_prefix' = 'seq', 'concatenate' = FALSE, 'maxmismatch' = 16, 'minoverlap' = 20, 'mergefile_prefix' = 'merged', 'minab' = 8, 'overab' = 2, 'oneoff' = TRUE, 'bimerafilename_prefix' = 'bimeras'))
 # Get arguments
 option_list = list(
   make_option(
@@ -144,7 +145,7 @@ option_list = list(
   ),
   make_option(
     c('--truncq'), type='integer', default=2,
-    help='truncQ option in fastqPairedFilter() call. Default 2.'
+    help='truncQ option in fastqPairedFilter() call. Default %default.'
   ),
   make_option(
     c("-v", "--verbose"), action="store_true", default=FALSE, 
@@ -324,6 +325,7 @@ for ( s in samples ) {
       fwddada2, fwdderep, revdada2, revderep, 
       minOverlap=opt$options$minoverlap, maxMismatch=opt$options$maxmismatch
     )
+    logmsg('  --> done')
   }
   mergers[[s]] = merge
 }
