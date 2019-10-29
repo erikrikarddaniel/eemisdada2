@@ -28,8 +28,19 @@ option_list = list(
     help='Directory for quality truncated reads, default "filtered". Will be created if it does not exist.'
   ),
   make_option(
+    c('--fnafile'), type='character', default = 'sequences.fna.gz',
+    help='Name of fasta file, existing or not, that will be read and written 
+		to; default %default. Sequence names has to start with the 
+    		same prefix as specified by the prefix option here.'
+  ),
+  make_option(
     c('--fwd'), action='store_true', default=TRUE,
     help='Calculate matrix for forward reads, default %default.'
+  ),
+  make_option(
+    c('--idlen'), type = 'integer', default = 9,
+    help = 'Number of characters to use for numerical index in sequence names,
+    		default %default.'
   ),
   make_option(
     c('--indir'), type='character', default='.',
@@ -88,6 +99,10 @@ option_list = list(
     help='Do not allow one off bimeras. See R doc for isBimeraDenovo.'
   ),
   make_option(
+    c('--outtable'), type='character', default = 'asvtable.tsv.gz',
+    help='Name of output tsv file, default "%default".'
+  ),
+  make_option(
     c('--overab'), type='integer', default=2,
     help='Parent overabundance multiplier, default %default. See R doc for isBimeraDenovo.'
   ),
@@ -114,6 +129,10 @@ option_list = list(
   make_option(
     c('--seqfile_prefix'), type='character', default='seq',
     help='String to prefix output files with, default "seq".'
+  ),
+  make_option(
+    c('--seqprefix'), type='character', default = 'seq_',
+    help='Prefix to use for sequence names, default "%default".'
   ),
   make_option(
     c('--trimleft'), type='character', default="0,0",
@@ -338,5 +357,45 @@ write_tsv(seqtab.dfl, sprintf("%s.tsv.gz", opt$options$bimerafilename_prefix))
 
 seqtab.sum = seqtab.dfl %>% summarise(count=sum(count))
 logmsg(sprintf("%d sequences remaining, totalling %d observations", length(seqtab.df$seq), seqtab.sum$count[1]))
+
+# Identify sequences
+
+# Read the fasta file we might be called with
+if ( file.exists(opt$options$fnafile) ) {
+  logmsg(sprintf("Reading fasta file %s", opt$options$fnafile))
+  seqs <- data.frame(seq = readDNAStringSet(opt$options$fnafile)) %>%
+    tibble::rownames_to_column('seqname') %>%
+    mutate(seqnum = sub(opt$options$seqprefix, '', seqname) %>% as.integer())
+  max_seqnum = ifelse(
+    nrow(seqs) > 0, 
+    seqs %>% filter(seqnum == max(seqnum)) %>% pull(seqnum),
+    0
+  )
+} else {
+  seqs <- tibble(seqname = character(), seq = character(), seqnum = integer())
+  max_seqnum = 0
+}
+
+# Join unique sequences from the two tables, create new seqname for those
+# missing from input fna
+logmsg(sprintf("Identifying new sequences, assigning names, max_seqnum: %d", max_seqnum), "DEBUG")
+seqname_format = sprintf("%%s%%0%dd", opt$options$idlen)
+logmsg(sprintf("seqtab.dfl columns: %s", paste(colnames(seqtab.dfl), collapse = ', ')), 'DEBUG')
+seqs <- seqs %>% select(-seqnum) %>%
+  union(
+    seqtab.dfl %>% distinct(seq) %>%
+      anti_join(seqs, by = 'seq') %>%
+      mutate(seqname = sprintf(seqname_format, opt$options$seqprefix, max_seqnum + rank(seq)))
+  )
+
+logmsg(sprintf("Writing %d sequences to %s fasta file", nrow(seqs), opt$options$fnafile))
+seqs %>% arrange(seqname) %>%
+  transmute(d = sprintf(">%s\n%s", seqname, seq)) %>%
+  write.table(opt$options$fnafile, col.names = FALSE, row.names = FALSE, quote = FALSE)
+
+logmsg(sprintf("Writing ASV table to %s", opt$options$outtable))
+seqtab.dfl %>% inner_join(seqs, by = 'seq') %>%
+  select(sample, seqname, count) %>%
+  write_tsv(opt$options$outtable)
 
 logmsg("Done")
