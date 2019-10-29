@@ -13,7 +13,7 @@ suppressPackageStartupMessages(library(tidyr))
 
 SCRIPT_VERSION = "0.9"
 
-# opt <- list(options = list('seed' = 42, 'verbose' = TRUE, 'indir' = '../../testdata/reads/', 'fwdmark' = '_R1_', 'revmark' = '_R2_', 'trimleft' = "13,13", 'trunclen' = "150,150", 'nsamples' = 10, 'method' = 'consensus', 'minab' = 4, 'filterdir' = 'filtered', 'minq' = 0, 'truncq' = 2, 'rmphix' = FALSE, 'maxee' = NA, 'fwd' = TRUE, 'rev' = TRUE, 'maxconsist' = 10, 'seqfile_prefix' = 'seq', 'concatenate' = FALSE, 'maxmismatch' = 16, 'minoverlap' = 20, 'mergefile_prefix' = 'merged', 'minab' = 8, 'overab' = 2, 'oneoff' = TRUE, 'bimerafilename_prefix' = 'bimeras'))
+# opt <- list(options = list('seed' = 42, 'verbose' = TRUE, 'indir' = '../../testdata/reads/', 'fwdmark' = '_R1_', 'revmark' = '_R2_', 'trimleft' = "13,13", 'trunclen' = "150,150", 'nsamples' = 10, 'method' = 'consensus', 'minab' = 4, 'filterdir' = 'filtered', 'minq' = 0, 'truncq' = 2, 'rmphix' = FALSE, 'maxee' = NA, 'fwd' = TRUE, 'rev' = TRUE, 'maxconsist' = 10, 'seqfile_prefix' = 'seq', 'concatenate' = FALSE, 'maxmismatch' = 16, 'minoverlap' = 20, 'mergefile_prefix' = 'merged', 'minab' = 8, 'overab' = 2, 'oneoff' = TRUE, 'bimerafilename_prefix' = 'bimeras', 'fnafile' = 'test.fna', 'idlen' = 8, 'seqprefix' = 'SS'))
 # Get arguments
 option_list = list(
   make_option(
@@ -128,8 +128,8 @@ option_list = list(
     help = "Set seed for random number generation, default don't set."
   ),
   make_option(
-    c('--seqfile_prefix'), type='character', default='seq',
-    help='String to prefix output files with, default "seq".'
+    c('--seqfile_prefix'), type='character', default='sequences',
+    help='String to prefix output files with, default "%default".'
   ),
   make_option(
     c('--seqprefix'), type='character', default = 'seq_',
@@ -177,6 +177,8 @@ logmsg = function(msg, llevel='INFO') {
     )
   }
 }
+logmsg(sprintf("opt: %s", opt), "DEBUG")
+q('no', 0)
 
 # I can't get type = 'integer' to work above...
 opt$options$seed <- as.integer(opt$options$seed)
@@ -382,22 +384,30 @@ if ( file.exists(opt$options$fnafile) ) {
 # missing from input fna
 logmsg(sprintf("Identifying new sequences, assigning names, max_seqnum: %d", max_seqnum), "DEBUG")
 seqname_format = sprintf("%%s%%0%dd", opt$options$idlen)
-logmsg(sprintf("seqtab.dfl columns: %s", paste(colnames(seqtab.dfl), collapse = ', ')), 'DEBUG')
+logmsg("*** seqtab.df ***", "DEBUG")
+head(seqtab.dfl)
 seqs <- seqs %>% select(-seqnum) %>%
   union(
     seqtab.dfl %>% distinct(seq) %>%
       anti_join(seqs, by = 'seq') %>%
       mutate(seqname = sprintf(seqname_format, opt$options$seqprefix, max_seqnum + rank(seq)))
   )
+logmsg("*** seqs ***", "DEBUG")
+head(seqs)
+logmsg("-- Done", "DEBUG")
+logmsg(sprintf("  nrows: %d", nrow(seqs)), "DEBUG")
+logmsg(sprintf("  fnafile: '%s'", opt$options$fnafile), "DEBUG")
 
 logmsg(sprintf("Writing %d sequences to %s fasta file", nrow(seqs), opt$options$fnafile))
 seqs %>% arrange(seqname) %>%
   transmute(d = sprintf(">%s\n%s", seqname, seq)) %>%
   write.table(opt$options$fnafile, col.names = FALSE, row.names = FALSE, quote = FALSE)
+logmsg("-- Done", "DEBUG")
 
 logmsg(sprintf("Writing ASV table to %s", opt$options$outtable))
 seqtab.dfl %>% inner_join(seqs, by = 'seq') %>%
   select(sample, seqname, count) %>%
   write_tsv(opt$options$outtable)
+logmsg("-- Done", "DEBUG")
 
 logmsg("Done")
