@@ -32,6 +32,10 @@ option_list = list(
     help='Calculate matrix for forward reads, default %default.'
   ),
   make_option(
+    c('--indir'), type='character', default='.',
+    help='Input directory, default current directory.'
+  ),
+  make_option(
     c('--nofwd'), action='store_false', dest='fwd',
     help='Do not calculate matrix for forward reads.'
   ),
@@ -213,6 +217,7 @@ logmsg(
     paste(trunclen, collapse=','), paste(trimleft, collapse=','), 0, paste(maxee, collapse=','), opt$options$truncq, opt$options$minq, opt$options$rmphix
   )
 )
+
 for ( i in seq_along(fwdinfiles) ) {
   logmsg(sprintf("--> Filtering %s <--", samples[i]))
   fastqPairedFilter(
