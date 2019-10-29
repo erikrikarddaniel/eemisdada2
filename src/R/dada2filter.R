@@ -79,8 +79,8 @@ logmsg = function(msg, llevel='INFO') {
 
 infiles = Sys.glob(sprintf("%s/*.fastq.gz", opt$indir))
 if ( length(infiles) == 0 ) {
-  print("No input files, exiting")
-  q('no', 1)
+  logmsg("No files found, exiting", 'WARNING')
+  q('no', 0)
 }
 logmsg(sprintf("You have %d files in %s that are going to be cleaned.", length(infiles), opt$indir))
 

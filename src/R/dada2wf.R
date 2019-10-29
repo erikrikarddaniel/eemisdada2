@@ -160,8 +160,8 @@ if ( opt$options$seed > 0 ) set.seed(opt$options$seed)
 
 infiles = Sys.glob(sprintf("%s/*.fastq.gz", opt$options$indir))
 if ( length(infiles) == 0 ) {
-  print("No input files, exiting")
-  q('no', 1)
+  logmsg("No files found, exiting", 'WARNING')
+  q('no', 0)
 }
 logmsg(sprintf("You have %d files in %s that are going to be cleaned.", length(infiles), opt$options$indir))
 

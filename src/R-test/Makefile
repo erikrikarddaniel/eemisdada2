@@ -10,7 +10,7 @@ CHECK = if [ ` $(DIFF) | wc -l ` -eq 0 ]; then echo "*** $@ OK ***"; else echo "
 
 all: dada2filter dada2errmodels dada2cleanNmerge dada2bimeras dada2idseq dada2taxonomy dada2wf
 
-dada2filter: dada2filter.00
+dada2filter: dada2filter.00 dada2filter.01
 
 dada2errmodels: dada2errmodels.00
 
@@ -27,6 +27,10 @@ dada2taxonomy: dada2taxonomy.00
 dada2filter.00:
 	../R/dada2filter.R --verbose --indir ../../testdata/reads/ --fwdmark _R1_ --revmark _R2_ --trimleft 13,13 --trunclen 150,150
 	@ls -l filtered/ | grep -v 'total' | sed 's/^[^ ]* [0-9] [^ ]* [^ ]* \( *[0-9]*\) ... [0-9]\+ ..:.. \(.*\)/\1 \2/' > $@.out
+	@$(CHECK)
+
+dada2filter.01:
+	../R/dada2filter.R --verbose --indir ../../testdata/no_reads/ --fwdmark _R1_ --revmark _R2_ --trimleft 13,13 --trunclen 150,150 2>&1 | sed 's/[-0-9:]\+//g' > $@.out 
 	@$(CHECK)
 
 dada2errmodels.00:
@@ -53,6 +57,10 @@ dada2wf.00:
 	@ls -l *.errorates.rds | sed 's/^[^ ]* [0-9] [^ ]* [^ ]* \( *[0-9]*\) ... [0-9]\+ ..:.. \(.*\)/\1 \2/' >> $@.out
 	@ls -l dada2.cleaned.merged.tsv.gz | sed 's/^[^ ]* [0-9] [^ ]* [^ ]* \( *[0-9]*\) ... [0-9]\+ ..:.. \(.*\)/\1 \2/' >> $@.out
 	@ls -l dada2.cleaned.merged.bimera.tsv.gz | sed 's/^[^ ]* [0-9] [^ ]* [^ ]* \( *[0-9]*\) ... [0-9]\+ ..:.. \(.*\)/\1 \2/' >> $@.out
+	@$(CHECK)
+
+dada2wf.01:
+	../R/dada2wf.R --verbose --seed 42 --indir ../../testdata/no_reads/ --fwdmark _R1_ --revmark _R2_ --trimleft 13,13 --trunclen 150,150 --nsamples=10 --method=consensus --minab=4 2>&1 | sed 's/[-0-9:]\+//g' > $@.out
 	@$(CHECK)
 
 dada2idseq.00:
