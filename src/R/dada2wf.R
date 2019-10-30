@@ -13,16 +13,20 @@ suppressPackageStartupMessages(library(tidyr))
 
 SCRIPT_VERSION = "0.9"
 
-# opt <- list(options = list('seed' = 42, 'verbose' = TRUE, 'indir' = '../../testdata/reads/', 'fwdmark' = '_R1_', 'revmark' = '_R2_', 'trimleft' = "13,13", 'trunclen' = "150,150", 'nsamples' = 10, 'method' = 'consensus', 'minab' = 4, 'filterdir' = 'filtered', 'minq' = 0, 'truncq' = 2, 'rmphix' = FALSE, 'maxee' = NA, 'fwd' = TRUE, 'rev' = TRUE, 'maxconsist' = 10, 'seqfile_prefix' = 'seq', 'concatenate' = FALSE, 'maxmismatch' = 16, 'minoverlap' = 20, 'mergefile_prefix' = 'merged', 'minab' = 8, 'overab' = 2, 'oneoff' = TRUE, 'bimerafilename_prefix' = 'bimeras', 'fnafile' = 'test.fna', 'idlen' = 8, 'seqprefix' = 'SS'))
+# opt <- list(options = list('seed' = 42, 'verbose' = TRUE, 'indir' = '../../testdata/reads/', 'fwdmark' = '_R1_', 'revmark' = '_R2_', 'trimleft' = "13,13", 'trunclen' = "150,150", 'nsamples' = 10, 'method' = 'consensus', 'minab' = 4, 'filterdir' = 'filtered', 'minq' = 0, 'truncq' = 2, 'rmphix' = FALSE, 'maxee' = NA, 'fwd' = TRUE, 'rev' = TRUE, 'maxconsist' = 10, 'seqfile_prefix' = 'seq', 'concatenate' = FALSE, 'maxmismatch' = 16, 'minoverlap' = 20, 'mergefile_prefix' = 'merged', 'minab' = 8, 'overab' = 2, 'oneoff' = TRUE, 'bimerafile_prefix' = 'bimeras', 'fnafile' = 'test.fna', 'idlen' = 8, 'seqprefix' = 'SS'))
 # Get arguments
 option_list = list(
   make_option(
-    c('--bimerafilename_prefix'), type='character', default='dada2.cleaned.merged.bimera',
+    c('--bimerafile_prefix'), type='character', default='dada2.cleaned.merged.bimera',
     help='Prefix for output files from the bimera check, default %default.'
   ),
   make_option(
     c("--concatenate"), action="store_true", default=FALSE, 
     help="Concatenate sequences instead of try to merge (use when overlap is too short), default %default. Setting this overrides --maxmismatch and --minoverlap."
+  ),
+  make_option(
+    c('--errormodelfile_prefix'), type='character', default='seq',
+    help='Prefix for output files from the error model estimation, default %default.'
   ),
   make_option(
     c('--filterdir'), type='character', default='filtered',
@@ -32,7 +36,7 @@ option_list = list(
     c('--fnafile'), type='character', default = 'sequences.fna.gz',
     help='Name of fasta file, existing or not, that will be read and written 
 		to; default %default. Sequence names has to start with the 
-    		same prefix as specified by the prefix option here.'
+    		same prefix as specified by the --seqprefix option here.'
   ),
   make_option(
     c('--fwd'), action='store_true', default=TRUE,
@@ -129,7 +133,7 @@ option_list = list(
   ),
   make_option(
     c('--seqfile_prefix'), type='character', default='sequences',
-    help='String to prefix output files with, default "%default".'
+    help='String to prefix final output files with, default "%default".'
   ),
   make_option(
     c('--seqprefix'), type='character', default = 'seq_',
@@ -177,8 +181,6 @@ logmsg = function(msg, llevel='INFO') {
     )
   }
 }
-logmsg(sprintf("opt: %s", opt), "DEBUG")
-q('no', 0)
 
 # I can't get type = 'integer' to work above...
 opt$options$seed <- as.integer(opt$options$seed)
@@ -186,7 +188,7 @@ if ( opt$options$seed > 0 ) set.seed(opt$options$seed)
 
 infiles = Sys.glob(sprintf("%s/*.fastq.gz", opt$options$indir))
 if ( length(infiles) == 0 ) {
-  logmsg("No files found, exiting", 'WARNING')
+  write("No files found, exiting", stderr())
   q('no', 0)
 }
 logmsg(sprintf("You have %d files in %s that are going to be cleaned.", length(infiles), opt$options$indir))
@@ -195,12 +197,12 @@ fwdinfiles = infiles[grep(opt$options$fwdmark, infiles, fixed=T)]
 revinfiles = infiles[grep(opt$options$revmark, infiles, fixed=T)]
 
 if ( length(fwdinfiles) != length(revinfiles) ) {
-  logmsg(
+  write(
     sprintf(
       "You do not have the same number (%d) of forward as reverse (%d) files. Exiting.", 
       length(fwdinfiles), length(revinfiles)
     ), 
-    llevel="WARNING"
+    stderr()
   )
   q('no', 1)
 } 
@@ -292,7 +294,7 @@ if ( opt$options$fwd ) {
     MAX_CONSIST = opt$options$maxconsist
   )
   fwderr = fwdlearn[[1]]$err_out
-  saveRDS(fwderr, sprintf('%s.dada2errmodels.fwd.errorates.rds', opt$options$seqfile_prefix))
+  saveRDS(fwderr, sprintf('%s.dada2errmodels.fwd.errorates.rds', opt$options$errormodelfile_prefix))
 }
 
 if ( opt$options$rev ) {
@@ -304,7 +306,7 @@ if ( opt$options$rev ) {
     MAX_CONSIST = opt$options$maxconsist
   )
   reverr = revlearn[[1]]$err_out
-  saveRDS(reverr, sprintf('%s.dada2errmodels.rev.errorates.rds', opt$options$seqfile_prefix))
+  saveRDS(reverr, sprintf('%s.dada2errmodels.rev.errorates.rds', opt$options$errormodelfile_prefix))
 }
 
 logmsg("Applying the error models")
@@ -356,8 +358,8 @@ seqtab = removeBimeraDenovo(
 seqtab.df = data.frame(t(seqtab)) %>% tibble::rownames_to_column('seq')
 seqtab.dfl = seqtab.df %>% gather(sample, count, 2:length(colnames(seqtab.df))) %>% filter(count>0)
 
-logmsg(sprintf("Writing tsv file %s.tsv.gz", opt$options$bimerafilename_prefix))
-write_tsv(seqtab.dfl, sprintf("%s.tsv.gz", opt$options$bimerafilename_prefix))
+logmsg(sprintf("Writing tsv file %s.tsv.gz", opt$options$bimerafile_prefix))
+write_tsv(seqtab.dfl, sprintf("%s.tsv.gz", opt$options$bimerafile_prefix))
 
 seqtab.sum = seqtab.dfl %>% summarise(count=sum(count))
 logmsg(sprintf("%d sequences remaining, totalling %d observations", length(seqtab.df$seq), seqtab.sum$count[1]))
@@ -384,19 +386,12 @@ if ( file.exists(opt$options$fnafile) ) {
 # missing from input fna
 logmsg(sprintf("Identifying new sequences, assigning names, max_seqnum: %d", max_seqnum), "DEBUG")
 seqname_format = sprintf("%%s%%0%dd", opt$options$idlen)
-logmsg("*** seqtab.df ***", "DEBUG")
-head(seqtab.dfl)
 seqs <- seqs %>% select(-seqnum) %>%
-  union(
+  dplyr::union(
     seqtab.dfl %>% distinct(seq) %>%
       anti_join(seqs, by = 'seq') %>%
       mutate(seqname = sprintf(seqname_format, opt$options$seqprefix, max_seqnum + rank(seq)))
   )
-logmsg("*** seqs ***", "DEBUG")
-head(seqs)
-logmsg("-- Done", "DEBUG")
-logmsg(sprintf("  nrows: %d", nrow(seqs)), "DEBUG")
-logmsg(sprintf("  fnafile: '%s'", opt$options$fnafile), "DEBUG")
 
 logmsg(sprintf("Writing %d sequences to %s fasta file", nrow(seqs), opt$options$fnafile))
 seqs %>% arrange(seqname) %>%
@@ -407,6 +402,7 @@ logmsg("-- Done", "DEBUG")
 logmsg(sprintf("Writing ASV table to %s", opt$options$outtable))
 seqtab.dfl %>% inner_join(seqs, by = 'seq') %>%
   select(sample, seqname, count) %>%
+  arrange(seqname, sample) %>%
   write_tsv(opt$options$outtable)
 logmsg("-- Done", "DEBUG")
 

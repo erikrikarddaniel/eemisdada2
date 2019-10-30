@@ -18,7 +18,7 @@ dada2cleanNmerge: dada2cleanNmerge.00
 
 dada2bimeras: dada2bimeras.00
 
-dada2wf: dada2wf.00 dada2wf.01 dada2wf.02. dada2wf.03
+dada2wf: dada2wf.00 dada2wf.01 dada2wf.02 dada2wf.03
 
 dada2idseq: dada2idseq.00 dada2idseq.01 dada2idseq.02
 
@@ -55,9 +55,9 @@ dada2bimeras.00:
 dada2wf.00:
 	@rm -f $@.out
 	@rm -f filtered/*
-	../R/dada2wf.R --verbose --seed 42 --indir ../../testdata/reads/ --fwdmark _R1_ --revmark _R2_ --trimleft 13,13 --trunclen 150,150 --nsamples=10 --method=consensus --minab=4 --seqprefix=S_ --fnafile=$@.out --outtable=$@.out.tsv.gz
+	../R/dada2wf.R --seed 42 --indir ../../testdata/reads/ --fwdmark _R1_ --revmark _R2_ --trimleft 13,13 --trunclen 150,150 --nsamples=10 --method=consensus --minab=4 --seqprefix=S_ --fnafile=$@.out --outtable=$@.out.tsv.gz
 	@echo "--> filtered <--" >> $@.out
-	@ls -l filtered/ | grep -v 'total' | sed 's/^[^ ]* [0-9] [^ ]* [^ ]* \( *[0-9]*\) ... [0-9]\+ ..:.. \(.*\)/\1 \2/' > $@.out
+	@ls -l filtered/ | grep -v 'total' | sed 's/^[^ ]* [0-9] [^ ]* [^ ]* \( *[0-9]*\) ... [0-9]\+ ..:.. \(.*\)/\1 \2/' >> $@.out
 	@echo "--> errorates <--" >> $@.out
 	@ls -l *.errorates.rds | sed 's/^[^ ]* [0-9] [^ ]* [^ ]* \( *[0-9]*\) ... [0-9]\+ ..:.. \(.*\)/\1 \2/' >> $@.out
 	@echo "--> cleanNmerge <--" >> $@.out
@@ -73,9 +73,9 @@ dada2wf.01:
 	@rm -f $@.out
 	@cp $@.fna $@.out
 	@rm -f filtered/*
-	../R/dada2wf.R --verbose --seed 42 --indir ../../testdata/reads/ --fwdmark _R1_ --revmark _R2_ --trimleft 13,13 --trunclen 150,150 --nsamples=10 --method=consensus --minab=4 --seqprefix=S_ --fnafile=$@.out --outtable=$@.out.tsv.gz
+	../R/dada2wf.R --seed 42 --indir ../../testdata/reads/ --fwdmark _R1_ --revmark _R2_ --trimleft 13,13 --trunclen 150,150 --nsamples=10 --method=consensus --minab=4 --seqprefix=S_ --fnafile=$@.out --outtable=$@.out.tsv.gz
 	@echo "--> filtered <--" >> $@.out
-	@ls -l filtered/ | grep -v 'total' | sed 's/^[^ ]* [0-9] [^ ]* [^ ]* \( *[0-9]*\) ... [0-9]\+ ..:.. \(.*\)/\1 \2/' > $@.out
+	@ls -l filtered/ | grep -v 'total' | sed 's/^[^ ]* [0-9] [^ ]* [^ ]* \( *[0-9]*\) ... [0-9]\+ ..:.. \(.*\)/\1 \2/' >> $@.out
 	@echo "--> errorates <--" >> $@.out
 	@ls -l *.errorates.rds | sed 's/^[^ ]* [0-9] [^ ]* [^ ]* \( *[0-9]*\) ... [0-9]\+ ..:.. \(.*\)/\1 \2/' >> $@.out
 	@echo "--> cleanNmerge <--" >> $@.out
@@ -91,9 +91,9 @@ dada2wf.02:
 	@rm -f $@.out
 	@cp $@.fna $@.out
 	@rm -f filtered/*
-	../R/dada2wf.R --verbose --seed 42 --indir ../../testdata/reads/ --fwdmark _R1_ --revmark _R2_ --trimleft 13,13 --trunclen 150,150 --nsamples=10 --method=consensus --minab=4 --seqprefix=S_ --fnafile=$@.out --outtable=$@.out.tsv.gz
+	../R/dada2wf.R --seed 42 --indir ../../testdata/reads/ --fwdmark _R1_ --revmark _R2_ --trimleft 13,13 --trunclen 150,150 --nsamples=10 --method=consensus --minab=4 --seqprefix=S_ --fnafile=$@.out --outtable=$@.out.tsv.gz
 	@echo "--> filtered <--" >> $@.out
-	@ls -l filtered/ | grep -v 'total' | sed 's/^[^ ]* [0-9] [^ ]* [^ ]* \( *[0-9]*\) ... [0-9]\+ ..:.. \(.*\)/\1 \2/' > $@.out
+	@ls -l filtered/ | grep -v 'total' | sed 's/^[^ ]* [0-9] [^ ]* [^ ]* \( *[0-9]*\) ... [0-9]\+ ..:.. \(.*\)/\1 \2/' >> $@.out
 	@echo "--> errorates <--" >> $@.out
 	@ls -l *.errorates.rds | sed 's/^[^ ]* [0-9] [^ ]* [^ ]* \( *[0-9]*\) ... [0-9]\+ ..:.. \(.*\)/\1 \2/' >> $@.out
 	@echo "--> cleanNmerge <--" >> $@.out
@@ -106,7 +106,7 @@ dada2wf.02:
 
 # Check that the scripts stop if no input files are found
 dada2wf.03:
-	../R/dada2wf.R --verbose --seed 42 --indir ../../testdata/no_reads/ --fwdmark _R1_ --revmark _R2_ --trimleft 13,13 --trunclen 150,150 --nsamples=10 --method=consensus --minab=4 2>&1 | sed 's/[-0-9:]\+//g' > $@.out
+	../R/dada2wf.R --seed 42 --indir ../../testdata/no_reads/ --fwdmark _R1_ --revmark _R2_ --trimleft 13,13 --trunclen 150,150 --nsamples=10 --method=consensus --minab=4 2>&1 | sed 's/[-0-9:]\+//g' > $@.out
 	@$(CHECK)
 
 dada2idseq.00:
